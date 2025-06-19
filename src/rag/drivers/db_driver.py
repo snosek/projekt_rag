@@ -10,7 +10,7 @@ conn_url = URL.create(
     drivername="postgresql+psycopg2",
     username=getenv("POSTGRES_USER"),
     password=getenv("POSTGRES_PASSWORD"),
-    host="localhost",
+    host="postgres",
     port=getenv("POSTGRES_PORT"),
     database=getenv("POSTGRES_DB"),
 )
