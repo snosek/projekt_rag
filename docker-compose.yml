@@ -13,19 +13,17 @@ services:
 
   streamlit:
       build:
-        # context: ./webapp
         dockerfile: ./webapp/Dockerfile
       ports:
         - "8501:8501"
       volumes:
         - ./webapp:/app
         - ./src:/src
-        - ./models:/models
-        - ./data:/data
       environment:
         POSTGRES_USER: ${POSTGRES_USER}
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         POSTGRES_DB: ${POSTGRES_DB}
+        GROQ_API_KEY: ${GROQ_API_KEY}
       depends_on:
         - postgres
 

@@ -2,7 +2,7 @@ from argparse import ArgumentParser, BooleanOptionalAction
 import json
 from pathlib import Path
 from sqlalchemy import text
-from src.rag.drivers.db_driver import get_db
+from rag.db_driver import get_db
 
 
 def main():
