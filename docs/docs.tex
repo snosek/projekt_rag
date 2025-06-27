@@ -43,10 +43,10 @@
 \newpage
 
 \section{Wstęp}
-Niniejszy dokument przedstawia szczegółową dokumentację projektu "System RAG do programu studiów". Projekt ten ma na celu stworzenie aplikacji webowej umożliwiającej semantyczne wyszukiwanie i odpowiadanie na pytania dotyczące programu studiów Politechniki Łódzkiej, wykorzystując technikę Retrieval-Augmented Generation (RAG). System ten ma za zadanie ułatwić użytkownikom dostęp do informacji o kursach, wymaganiach, efektach uczenia się oraz innych szczegółach związanych z ofertą edukacyjną uczelni.
+Sprawozdanie przedstawia dokumentację projektu ``System RAG do programu studiów''. Projekt ten miał na celu stworzenie aplikacji webowej umożliwiającej semantyczne wyszukiwanie i odpowiadanie na pytania dotyczące programu studiów Politechniki Łódzkiej, wykorzystując technikę Retrieval-Augmented Generation (RAG). System ten ma za zadanie ułatwić użytkownikom dostęp do informacji o kursach, wymaganiach, efektach uczenia się oraz innych szczegółach związanych z ofertą edukacyjną uczelni.
 
 \section{Cel projektu}
-Głównym celem projektu jest rozwiązanie problemu trudności w szybkim i efektywnym wyszukiwaniu szczegółowych informacji w obszernej bazie danych programów studiów Politechniki Łódzkiej. Aplikacja ma dostarczyć intuicyjny interfejs użytkownika, który na podstawie naturalnego języka zapytań będzie w stanie odnaleźć najbardziej relewantne kursy i wygenerować zwięzłe odpowiedzi. Cele szczegółowe to:
+Głównym celem projektu jest rozwiązanie problemu trudności w szybkim i efektywnym wyszukiwaniu szczegółowych informacji w bazie danych programów studiów Politechniki Łódzkiej. Aplikacja ma dostarczyć intuicyjny interfejs użytkownika, który na podstawie naturalnego języka zapytań będzie w stanie odnaleźć najbardziej relewantne kursy i wygenerować zwięzłe odpowiedzi. Cele szczegółowe to:
 \begin{itemize}
     \item Zaprojektowanie i implementacja modułu do scrapowania danych z witryn internetowych Politechniki Łódzkiej zawierających informacje o programach studiów.
     \item Budowa i utrzymanie bazy danych przechowującej przetworzone dane o kursach wraz z ich wektorowymi reprezentacjami (embeddingami).
@@ -65,32 +65,23 @@ System został zaprojektowany jako aplikacja webowa w architekturze mikrousługo
 \subsection{Komponenty systemu}
 \begin{itemize}
     \item \textbf{Scraper danych}: Moduł odpowiedzialny za zbieranie danych o kursach z oficjalnych stron Politechniki Łódzkiej.
-    \item \textbf{Baza danych PostgreSQL z rozszerzeniem PGVector}: Przechowuje dane o kursach w formacie JSONB oraz ich wektorowe reprezentacje (embeddingi), umożliwiając efektywne wyszukiwanie wektorowe.
-    \item \textbf{Silnik semantycznego wyszukiwania}: Odpowiada za generowanie embeddingów dla zapytań użytkowników oraz wyszukiwanie najbardziej podobnych wektorów w bazie danych.
-    \item \textbf{Moduł chatbota}: Wykorzystuje model językowy (LLM) do generowania odpowiedzi na pytania użytkowników w oparciu o kontekst dostarczony przez silnik semantycznego wyszukiwania.
+    \item \textbf{Baza danych PostgreSQL z rozszerzeniem PGVector}: Przechowuje dane o kursach w formacie JSONB oraz ich wektorowe reprezentacje (embeddingi). Dodatkowo umożliwia efektywne wyszukiwanie wektorowe.
+    \item \textbf{Silnik wyszukiwania semantycznego}: Odpowiada za generowanie embeddingów dla zapytań użytkowników oraz wyszukiwanie najbardziej podobnych wektorów w bazie danych.
+    \item \textbf{Moduł chatbota}: Wykorzystuje duży model językowy (LLM), dostępny poprzez darmowe API, do generowania odpowiedzi na pytania użytkowników w oparciu o kontekst dostarczony przez silnik wyszukiwania semantycznego.
     \item \textbf{Aplikacja webowa (Streamlit)}: Stanowi interfejs użytkownika, za pomocą którego użytkownicy mogą zadawać pytania i otrzymywać odpowiedzi.
-    \item \textbf{Docker i Docker Compose}: Używane do konteneryzacji i orkiestracji wszystkich komponentów systemu, co zapewnia łatwe wdrożenie i skalowalność.
+    \item \textbf{Docker i Docker Compose}: Używane do konteneryzacji i orkiestracji wszystkich komponentów systemu.
 \end{itemize}
-
-\subsection{Schemat architektury}
-\begin{figure}[h!]
-    \centering
-    % \includegraphics[width=0.8\textwidth]{architecture_diagram.png} % Załóż, że masz taki plik z diagramem
-    \caption{Schemat architektury systemu}
-    \label{fig:architecture}
-\end{figure}
-\textit{[Zamiast powyższego placeholder'a, proszę wstawić faktyczny diagram architektury systemu.]}
 
 \subsection{Stos technologiczny}
 \begin{itemize}
     \item \textbf{Python}: Główny język programowania użyty do implementacji scrapera, logiki backendu, silnika semantycznego wyszukiwania i chatbota.
     \item \textbf{Streamlit}: Framework do budowy interfejsu użytkownika webowego.
-    \item \textbf{PostgreSQL z PGVector}: System zarządzania bazą danych z rozszerzeniem do obsługi wektorów.
-    \item \textbf{SQLAlchemy}: ORM (Object-Relational Mapper) do interakcji z bazą danych.
+    \item \textbf{PostgreSQL z PGVector}: System zarządzania bazą danych z rozszerzeniem do obsługi embeddingów.
+    \item \textbf{SQLAlchemy}: Używany do interakcji z bazą danych z poziomu Pythona (kwestie ORM pominięte).
     \item \textbf{sentence-transformers}: Biblioteka do generowania embeddingów.
     \item \textbf{Groq API}: Wykorzystywane do dostępu do modeli językowych (LLM).
     \item \textbf{Selenium}: Biblioteka do automatyzacji przeglądarek, używana w scraperze.
-    \item \textbf{Pandas, NumPy, Spacy, bm25s, unidecode, psycopg2-binary, python-dotenv}: Dodatkowe biblioteki wspomagające przetwarzanie danych i działanie aplikacji.
+    \item \textbf{Pandas, NumPy, python-dotenv}: Dodatkowe biblioteki wspomagające przetwarzanie danych i działanie aplikacji.
 \end{itemize}
 
 \section{Opis implementacji}
@@ -111,43 +102,47 @@ Scraper składa się z trzech głównych skryptów:
 \subsubsection{Moduły bazy danych (\texttt{db/})}
 \begin{itemize}
     \item \texttt{populate\_db.py}: Skrypt do inicjalizacji schematu bazy danych i populacji jej danymi z plików JSON zebranych przez scraper. Tworzy tabelę \texttt{course\_data} z kolumnami \texttt{id}, \texttt{data} (JSONB) i \texttt{embedding} (VECTOR(384)).
-    \item \texttt{generate\_embeddings.py}: Skrypt odpowiedzialny za generowanie embeddingów dla opisów kursów. Wykorzystuje model \texttt{sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2} do kodowania opisów kursów, które są konstruowane z różnych pól danych kursu. Następnie aktualizuje pole \texttt{embedding} w tabeli \texttt{course\_data}.
+    \item \texttt{generate\_embeddings.py}: Skrypt odpowiedzialny za generowanie embeddingów dla opisów kursów. Wykorzystuje model \texttt{sentence-transformers/\allowbreak paraphrase-multilingual-MiniLM-L12-v2} do kodowania opisów kursów, które są konstruowane z różnych pól danych kursu. Następnie aktualizuje pole \texttt{embedding} w tabeli \texttt{course\_data}.
 \end{itemize}
 
 \subsubsection{Moduły RAG (\texttt{src/rag/})}
 \begin{itemize}
-    \item \texttt{db\_driver.py}: Zawiera funkcje do łączenia się z bazą danych PostgreSQL za pomocą SQLAlchemy i \texttt{psycopg2-binary}. Używa zmiennych środowiskowych do konfiguracji połączenia i udostępnia kontekst menedżera \texttt{get\_db} do bezpiecznej pracy z sesjami bazy danych.
-    \item \texttt{semantic\_search.py}: Implementuje klasę \texttt{SemanticSearchEngine}, która wykorzystuje model \texttt{sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2} do generowania embeddingów zapytań. Wykonuje zapytanie do bazy danych, wykorzystując operator \texttt{<=>} (odległość cosinusowa) do znalezienia 10 najbliższych wektorów kursów.
-    \item \texttt{chatbot.py}: Zawiera funkcje \texttt{create\_prompt} i \texttt{get\_answer}. Funkcja \texttt{create\_prompt} formatuje zapytanie użytkownika i informacje o najbliższych kursach w spójny prompt dla modelu językowego. Funkcja \texttt{get\_answer} wysyła sformułowany prompt do API Groq (\texttt{llama-3.3-70b-versatile}) i zwraca wygenerowaną odpowiedź.
+    \item \texttt{db\_driver.py}: Zawiera funkcje do łączenia się z bazą danych PostgreSQL za pomocą SQLAlchemy i \texttt{psycopg2-binary}. Używa zmiennych środowiskowych do konfiguracji połączenia i udostępnia context managera \texttt{get\_db} do bezpiecznej pracy z sesjami bazy danych.
+    \item \texttt{semantic\_search.py}: Implementuje klasę \texttt{SemanticSearchEngine}, która wykorzystuje model \texttt{sentence-transformers/paraphrase-multilingual\allowbreak MiniLM-L12-v2} do generowania embeddingów zapytań. Wykonuje zapytanie do bazy danych, wykorzystując operator \texttt{<=>} (odległość cosinusowa) do znalezienia 10 najbliższych wektorów kursów.
+    \item \texttt{chatbot.py}: Zawiera funkcje \texttt{create\_prompt} i \texttt{get\_answer}. Funkcja \\\texttt{create\_prompt} formatuje zapytanie użytkownika i informacje o najbliższych kursach w spójny prompt dla modelu językowego. Funkcja \texttt{get\_answer} wysyła sformułowany prompt do API Groq (\texttt{llama-3.3-70b-versatile}) i zwraca wygenerowaną odpowiedź.
 \end{itemize}
 
 \subsection{Baza danych}
-Baza danych wykorzystuje PostgreSQL z rozszerzeniem PGVector, co umożliwia przechowywanie i efektywne wyszukiwanie wektorów o wysokiej wymiarowości.
+Baza danych opiera się na PostgreSQL z rozszerzeniem PGVector, co umożliwia przechowywanie i efektywne wyszukiwanie wektorów o wysokiej wymiarowości.
 \begin{itemize}
     \item \textbf{Tabela \texttt{course\_data}}: Przechowuje surowe dane kursów w kolumnie \texttt{data} typu JSONB oraz ich embeddingi w kolumnie \texttt{embedding} typu VECTOR(384).
     \item \textbf{Konfiguracja}: Konfiguracja połączenia z bazą danych odbywa się za pomocą zmiennych środowiskowych (\texttt{POSTGRES\_USER}, \texttt{POSTGRES\_PASSWORD}, \texttt{POSTGRES\_DB}, \texttt{POSTGRES\_PORT}).
 \end{itemize}
 
 \subsection{Frontend}
-Frontend aplikacji został zaimplementowany w Streamlit, co zapewnia szybkie prototypowanie i interaktywny interfejs użytkownika.
+Frontend aplikacji został zaimplementowany w Streamlit.
 \begin{itemize}
-    \item \texttt{webapp/app.py}: Główny plik aplikacji Streamlit. Użytkownik wprowadza zapytanie tekstowe. Po naciśnięciu przycisku "Pytaj" aplikacja wykorzystuje \texttt{SemanticSearchEngine} do wyszukania podobnych kursów. Następnie generuje prompt i wysyła go do chatbota, wyświetlając otrzymaną odpowiedź.
+    \item \texttt{webapp/app.py}: Główny plik aplikacji Streamlit. Użytkownik wprowadza zapytanie tekstowe. Po naciśnięciu przycisku ``Pytaj'' aplikacja wykorzystuje \texttt{SemanticSearchEngine} do wyszukania podobnych kursów. Następnie generuje prompt i wysyła go do chatbota, wyświetlając otrzymaną odpowiedź.
     \item \texttt{webapp/Dockerfile}: Definiuje środowisko dla aplikacji Streamlit, bazując na obrazie \texttt{python:3.9-slim}. Instaluje niezbędne zależności systemowe i Pythonowe z pliku \texttt{requirements.txt}. Kopiuje kod aplikacji i ustawia punkt wejścia do uruchomienia aplikacji Streamlit.
 \end{itemize}
 
 \subsection{Konteneryzacja (Docker i Docker Compose)}
 Cała aplikacja jest konteneryzowana przy użyciu Docker. Plik \texttt{docker-compose.yml} definiuje dwa serwisy:
 \begin{itemize}
-    \item \textbf{postgres}: Wykorzystuje obraz \texttt{ankane/pgvector:latest} do uruchomienia bazy danych PostgreSQL z rozszerzeniem PGVector. Port jest mapowany z hosta, a zmienne środowiskowe są używane do konfiguracji bazy danych. Wolumin \texttt{pgdata} zapewnia trwałość danych.
+    \item \textbf{postgres}: Wykorzystuje obraz \texttt{ankane/pgvector:latest} do uruchomienia bazy danych PostgreSQL z rozszerzeniem PGVector. Wszystko konfigurowane jest z pomocą zmiennych środowiskowych.
     \item \textbf{streamlit}: Budowany z \texttt{webapp/Dockerfile}. Mapuje port 8501 na hosta i montuje woluminy \texttt{./webapp} oraz \texttt{./src} do kontenera. Przekazuje zmienne środowiskowe potrzebne do połączenia z bazą danych i klucza API Groq. Posiada zależność od serwisu \texttt{postgres}.
 \end{itemize}
 Ten układ zapewnia izolację środowisk, łatwość wdrożenia i odtwarzalność.
 
 \section{Podsumowanie i wnioski}
-Projekt "System RAG do programu studiów" stanowi kompleksowe rozwiązanie problemu dostępu do informacji o kursach na Politechnice Łódzkiej. Dzięki zastosowaniu technik RAG, system jest w stanie nie tylko odnajdywać relewantne dokumenty, ale także generować spójne i kontekstowe odpowiedzi, co znacząco poprawia doświadczenie użytkownika w porównaniu do tradycyjnych wyszukiwarek.
+Projekt ``System RAG do programu studiów'' stanowi kompleksowe rozwiązanie problemu dostępu do informacji o kursach na Politechnice Łódzkiej. Dzięki zastosowaniu technik RAG, system jest w stanie nie tylko odnajdywać relewantne dokumenty, ale także generować spójne i kontekstowe odpowiedzi, znacząco poprawiając doświadczenie użytkownika w porównaniu do tradycyjnych wyszukiwarek.
 
 \subsection{Napotkane wyzwania}
-\textit{[W tej sekcji opisz napotkane trudności podczas realizacji projektu, np. problemy ze scrapowaniem dynamicznych stron, optymalizacją zapytań wektorowych, integracją różnych komponentów, czy zarządzaniem zależnościami.]}
+Podczas realizacji projektu napotkano kilka kluczowych wyzwań. Jednym z nich była kwestia doboru modelu dla silnika wyszukiwania semantycznego oraz chatbota. Wybór odpowiedniego modelu Sentence-Transformers do generowania embeddingów oraz modelu językowego (LLM) z oferty Groq wymagał empirycznego badania jakości poprzez ręczne testy i weryfikację trafności wyników. Zdarzało się, że pierwsze wybrane modele nie dawały satysfakcjonujących rezultatów, co wymuszało eksperymentowanie z innymi opcjami i iteracyjne doskonalenie.
+
+Kolejnym istotnym wyzwaniem było kilkupoziomowe scrapowanie danych. Strony Politechniki Łódzkiej charakteryzują się złożoną strukturą, w której informacje o kursach są zagnieżdżone na różnych poziomach (programy -> kierunki -> specjalizacje -> semestry -> kursy -> szczegóły kursu). Dodatkowo, napotkano na problemy z pustymi elementami, brakującymi danymi oraz różnym formatowaniem kart przedmiotów, co wymagało implementacji elastycznych mechanizmów parsowania i obsługi błędów w skryptach scrapera. Szczególnym przypadkiem był ``Mobility Semester'', który wymagał specjalnego traktowania ze względu na brak szczegółowych informacji o kursach.
+
+Trzecim znaczącym problemem było nawiązanie połączenia z bazą danych PostgreSQL uruchomioną w kontenerze Docker. Początkowo połączenie nie działało, ponieważ port 5432, domyślny dla PostgreSQL, był już zajęty przez lokalnie zainstalowaną wersję PostgreSQL. Problem został rozwiązany po zbadaniu otwartych portów i zmianie mapowania portów w pliku \texttt{docker-compose.yml} na wolny port hosta.
 
 \subsection{Możliwości dalszego rozwoju}
 \begin{itemize}
@@ -161,23 +156,18 @@ Projekt "System RAG do programu studiów" stanowi kompleksowe rozwiązanie probl
 
 \section{Bibliografia}
 \begin{thebibliography}{99}
-    \bibitem{docker} Oficjalna dokumentacja Docker: \url{https://docs.docker.com/}
-    \bibitem{docker-compose-docs} Oficjalna dokumentacja Docker Compose: \url{https://docs.docker.com/compose/}
-    \bibitem{streamlit-docs} Oficjalna dokumentacja Streamlit: \url{https://docs.streamlit.io/}
-    \bibitem{postgres-docs} Oficjalna dokumentacja PostgreSQL: \url{https://www.postgresql.org/docs/}
+    \bibitem{docker} Dokumentacja Docker: \url{https://docs.docker.com/}
+    \bibitem{docker-compose-docs} Dokumentacja Docker Compose: \url{https://docs.docker.com/compose/}
+    \bibitem{streamlit-docs} Dokumentacja Streamlit: \url{https://docs.streamlit.io/}
+    \bibitem{postgres-docs} Dokumentacja PostgreSQL: \url{https://www.postgresql.org/docs/}
     \bibitem{pgvector-github} Repozytorium GitHub PGVector: \url{https://github.com/pgvector/pgvector}
-    \bibitem{python-docs} Oficjalna dokumentacja Python: \url{https://docs.python.org/3/}
-    \bibitem{sqlalchemy-docs} Oficjalna dokumentacja SQLAlchemy: \url{https://docs.sqlalchemy.org/}
-    \bibitem{psycopg2-docs} Oficjalna dokumentacja Psycopg2: \url{https://www.psycopg.org/docs/}
-    \bibitem{sentence-transformers-docs} Oficjalna dokumentacja Sentence-Transformers: \url{https://www.sbert.net/docs/index.html}
-    \bibitem{groq-docs} Oficjalna dokumentacja Groq API: \url{https://console.groq.com/docs/api}
-    \bibitem{selenium-docs} Oficjalna dokumentacja Selenium: \url{https://www.selenium.dev/documentation/webdriver/}
-    \bibitem{pandas-docs} Oficjalna dokumentacja Pandas: \url{https://pandas.pydata.org/docs/}
-    \bibitem{numpy-docs} Oficjalna dokumentacja NumPy: \url{https://numpy.org/doc/}
-    \bibitem{spacy-docs} Oficjalna dokumentacja spaCy: \url{https://spacy.io/api}
-    \bibitem{bm25s-github} Repozytorium GitHub bm25s: \url{https://github.com/dorianbrown/bm25s}
-    \bibitem{unidecode-github} Repozytorium GitHub Unidecode: \url{https://github.com/iki/unidecode}
-    \bibitem{python-dotenv-github} Repozytorium GitHub python-dotenv: \url{https://github.com/theskumar/python-dotenv}
+    \bibitem{python-docs} Dokumentacja Python: \url{https://docs.python.org/3/}
+    \bibitem{sqlalchemy-docs} Dokumentacja SQLAlchemy: \url{https://docs.sqlalchemy.org/}
+    \bibitem{sentence-transformers-docs} Dokumentacja Sentence-Transformers: \url{https://www.sbert.net/docs/index.html}
+    \bibitem{groq-docs} Dokumentacja Groq API: \url{https://console.groq.com/docs/api-reference}
+    \bibitem{selenium-docs} Dokumentacja Selenium: \url{https://www.selenium.dev/documentation/webdriver/}
+    \bibitem{pandas-docs} Dokumentacja Pandas: \url{https://pandas.pydata.org/docs/}
+    \bibitem{numpy-docs} Dokumentacja NumPy: \url{https://numpy.org/doc/}
 \end{thebibliography}
 
 \end{document}
