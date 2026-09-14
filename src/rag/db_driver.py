@@ -1,21 +1,27 @@
-from os import getenv
 from contextlib import contextmanager
-from dotenv import load_dotenv
+
 from sqlalchemy import URL, create_engine
 from sqlalchemy.orm import sessionmaker
 
-load_dotenv()
+from rag.config import (
+    POSTGRES_DB,
+    POSTGRES_HOST,
+    POSTGRES_PASSWORD,
+    POSTGRES_PORT,
+    POSTGRES_USER,
+)
 
 conn_url = URL.create(
     drivername="postgresql+psycopg2",
-    username=getenv("POSTGRES_USER"),
-    password=getenv("POSTGRES_PASSWORD"),
-    host="postgres",
-    port=getenv("POSTGRES_PORT"),
-    database=getenv("POSTGRES_DB"),
+    username=POSTGRES_USER,
+    password=POSTGRES_PASSWORD,
+    host=POSTGRES_HOST,
+    port=POSTGRES_PORT,
+    database=POSTGRES_DB,
 )
 engine = create_engine(conn_url)
 session = sessionmaker(bind=engine, autoflush=False)
+
 
 @contextmanager
 def get_db(commit: bool = False):
@@ -27,10 +33,10 @@ def get_db(commit: bool = False):
     db = session()
     try:
         yield db
-    except Exception as e:
-        db.rollback()
-        raise e
-    finally:
         if commit:
             db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
         db.close()

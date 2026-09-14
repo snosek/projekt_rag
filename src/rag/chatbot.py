@@ -1,32 +1,46 @@
-from os import getenv
-from dotenv import load_dotenv
+from __future__ import annotations
+
 import cohere
-import logging as log
 
-log.info("Loading .env...")
-load_dotenv()
-
-ENV_VAR_NAMES = ["POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB", "POSTGRES_PORT"]
-
-log.info(f'''.env loaded: {
-        [getenv(name) for name in ENV_VAR_NAMES]
-    }'''
+from rag.config import COHERE_MODEL
+from rag.course_fields import (
+    COURSE_CONTENT,
+    COURSE_LANGUAGE,
+    COURSE_LEADER,
+    COURSE_NAME,
+    ECTS,
+    ORGANIZING_UNIT,
+    OUTCOME_VERIFICATION_METHODS,
+    PASS_CONDITIONS,
+    PREREQUISITES,
+    PROGRAM_LEARNING_OUTCOMES,
+    SUBJECT_LEARNING_OUTCOMES,
 )
 
-def create_prompt(query, closest_courses):
+_cohere_client: cohere.ClientV2 | None = None
+
+
+def get_client() -> cohere.ClientV2:
+    global _cohere_client
+    if _cohere_client is None:
+        _cohere_client = cohere.ClientV2()
+    return _cohere_client
+
+
+def create_prompt(query: str, closest_courses: list[dict]) -> str:
     course_text = "\n\n".join(
         [
-            f"Kurs o nazwie: {course['data']['Nazwa w języku polskim']}\n"
-            f"ECTS: {course['data']['ECTS']}\n"
-            f"Język prowadzenia zajęć: {course['data']['Język prowadzenia zajęć']}\n"
-            f"Jednostka prowadząca: {course['data']['Jednostka prowadząca']}\n"
-            f"Kierownik przedmiotu: {course['data']['Kierownik przedmiotu']}\n"
-            f"Wymagania wstępne: {course['data']['Wymagania wstępne']}\n"
-            f"Przedmiotowe efekty uczenia się: {course['data']['Przedmiotowe efekty uczenia się']}\n"
-            f"Metody weryfikacji efektów uczenia się: {course['data']['Metody weryfikacji przedmiotowych efektów uczenia się']}\n"
-            f"Kierunkowe efekty uczenia się: {course['data']['Kierunkowe efekty uczenia się']}\n"
-            f"Formy i warunki zaliczenia przedmiotu: {course['data']['Formy i warunki zaliczenia przedmiotu']}\n"
-            f"Szczegółowe treści przedmiotu: {course['data']['Szczegółowe treści przedmiotu']}\n"
+            f"Kurs o nazwie: {course['data'][COURSE_NAME]}\n"
+            f"ECTS: {course['data'][ECTS]}\n"
+            f"Język prowadzenia zajęć: {course['data'][COURSE_LANGUAGE]}\n"
+            f"Jednostka prowadząca: {course['data'][ORGANIZING_UNIT]}\n"
+            f"Kierownik przedmiotu: {course['data'][COURSE_LEADER]}\n"
+            f"Wymagania wstępne: {course['data'][PREREQUISITES]}\n"
+            f"Przedmiotowe efekty uczenia się: {course['data'][SUBJECT_LEARNING_OUTCOMES]}\n"
+            f"Metody weryfikacji efektów uczenia się: {course['data'][OUTCOME_VERIFICATION_METHODS]}\n"
+            f"Kierunkowe efekty uczenia się: {course['data'][PROGRAM_LEARNING_OUTCOMES]}\n"
+            f"Formy i warunki zaliczenia przedmiotu: {course['data'][PASS_CONDITIONS]}\n"
+            f"Szczegółowe treści przedmiotu: {course['data'][COURSE_CONTENT]}\n"
             for course in closest_courses
         ]
     )
@@ -41,13 +55,14 @@ def create_prompt(query, closest_courses):
     """
     return prompt
 
-co = cohere.ClientV2()
 
-def get_answer(prompt):
-    response = co.chat(
+def get_answer(prompt: str) -> str:
+    response = get_client().chat(
         messages=[
             {"role": "user", "content": prompt}
         ],
-        model="command-a-plus-05-2026",
+        model=COHERE_MODEL,
     )
+    if not response.message.content:
+        raise RuntimeError("Cohere returned an empty response.")
     return response.message.content[-1].text

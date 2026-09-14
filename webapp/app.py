@@ -1,10 +1,16 @@
 import streamlit as st
+from rag.chatbot import create_prompt, get_answer
 from rag.semantic_search import SemanticSearchEngine
-from rag.chatbot import get_answer, create_prompt
 
 st.title("Zapytaj o program studiów!")
 
-semantic_search_engine = SemanticSearchEngine()
+
+@st.cache_resource
+def get_search_engine() -> SemanticSearchEngine:
+    return SemanticSearchEngine()
+
+
+semantic_search_engine = get_search_engine()
 
 query = st.text_input("")
 

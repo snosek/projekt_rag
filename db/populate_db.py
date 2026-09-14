@@ -1,16 +1,18 @@
-from argparse import ArgumentParser, BooleanOptionalAction
 import json
+from argparse import ArgumentParser, BooleanOptionalAction
 from pathlib import Path
-from sqlalchemy import text
-from rag.db_driver import get_db
+
+from rag.config import COURSE_DATA_DIR
+from rag.repository import CourseRepository
 
 
 def main():
     args = parse_args()
+    repository = CourseRepository()
     if args.init:
-        create_schema()
+        repository.create_schema()
     if args.populate:
-        populate_db()
+        populate_db(repository)
 
 
 def parse_args():
@@ -28,24 +30,8 @@ def parse_args():
     return parser.parse_args()
 
 
-def create_schema():
-    print("running create_schema")
-    with get_db(commit=True) as db:
-        db.execute(text("DROP TABLE IF EXISTS course_data;"))
-        db.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
-        db.execute(
-            text(
-                """CREATE TABLE IF NOT EXISTS course_data 
-                (id SERIAL PRIMARY KEY,data JSONB,embedding VECTOR(384));"""
-            )
-        )
-
-
-def populate_db():
-    print("running populate_db")
-    courses_dir = "data/dane_low_level"
-    courses_dir = Path("data/dane_low_level")
-    json_filepaths = courses_dir.glob("*.json")
+def populate_db(repository: CourseRepository):
+    json_filepaths = Path(COURSE_DATA_DIR).glob("*.json")
     for filepath in json_filepaths:
         with open(filepath, "r", encoding="utf-8") as f:
             try:
@@ -53,10 +39,7 @@ def populate_db():
             except json.JSONDecodeError as e:
                 print(f"Failed to load {filepath}: {e}")
                 continue
-        with get_db(commit=True) as db:
-            db.execute(
-                text("INSERT INTO course_data (data) VALUES (:data)"), {"data": data}
-            )
+        repository.insert(data)
 
 
 if __name__ == "__main__":

@@ -1,26 +1,19 @@
 from sentence_transformers import SentenceTransformer
-from sqlalchemy import text
-from rag.db_driver import get_db
+
+from rag.config import EMBEDDING_MODEL, SEMANTIC_SEARCH_LIMIT
+from rag.repository import CourseRepository
 
 
 class SemanticSearchEngine:
-    def __init__(self):
-        self.model = SentenceTransformer(
-            "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-            device="cpu",
-        )
+    def __init__(
+        self,
+        model_name: str = EMBEDDING_MODEL,
+        limit: int = SEMANTIC_SEARCH_LIMIT,
+    ) -> None:
+        self.model = SentenceTransformer(model_name, device="cpu")
+        self._repository = CourseRepository()
+        self.limit = limit
 
     def search(self, query: str) -> list:
         embedding = self.model.encode(query)
-        with get_db() as db:
-            results = db.execute(
-                text(
-                    """
-                    SELECT data FROM course_data
-                    ORDER BY embedding <=> CAST(:embedding AS vector)
-                    LIMIT 10;
-                """
-                ),
-                {"embedding": embedding.tolist()},
-            ).mappings().all()
-        return results
+        return self._repository.semantic_search(embedding.tolist(), self.limit)

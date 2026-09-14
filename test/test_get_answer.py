@@ -20,10 +20,35 @@ class FakeResponse:
 
 
 def test_get_answer_returns_cohere_text(monkeypatch):
-    def fake_chat(**kwargs):
-        assert kwargs["model"] == "command-a-plus-05-2026"
-        assert kwargs["messages"][0]["role"] == "user"
-        return FakeResponse("To jest odpowiedz.")
+    def fake_client():
+        class FakeCohere:
+            def chat(self, **kwargs):
+                assert kwargs["model"] == "command-a-plus-05-2026"
+                assert kwargs["messages"][0]["role"] == "user"
+                return FakeResponse("To jest odpowiedz.")
 
-    monkeypatch.setattr(chatbot.co, "chat", fake_chat)
+        return FakeCohere()
+
+    monkeypatch.setattr(chatbot, "get_client", fake_client)
     assert get_answer("prompt") == "To jest odpowiedz."
+
+
+def test_get_answer_raises_on_empty_content(monkeypatch):
+    class EmptyMessage:
+        def __init__(self):
+            self.content = []
+
+    class EmptyResponse:
+        def __init__(self):
+            self.message = EmptyMessage()
+
+    def fake_client():
+        class FakeCohere:
+            def chat(self, **kwargs):
+                return EmptyResponse()
+
+        return FakeCohere()
+
+    monkeypatch.setattr(chatbot, "get_client", fake_client)
+    with pytest.raises(RuntimeError, match="empty"):
+        get_answer("prompt")

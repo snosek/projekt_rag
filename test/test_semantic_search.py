@@ -2,6 +2,7 @@ from contextlib import contextmanager
 
 import pytest
 
+import rag.repository as repository
 import rag.semantic_search as semantic_search
 from rag.semantic_search import SemanticSearchEngine
 
@@ -43,27 +44,25 @@ def engine(monkeypatch):
     return SemanticSearchEngine()
 
 
-def test_search_returns_results(engine, monkeypatch):
-    fake_db = FakeDB()
+@pytest.fixture
+def fake_db(monkeypatch):
+    db = FakeDB()
 
     @contextmanager
     def fake_get_db(commit=False):
-        yield fake_db
+        yield db
 
-    monkeypatch.setattr(semantic_search, "get_db", fake_get_db)
+    monkeypatch.setattr(repository, "get_db", fake_get_db)
+    return db
+
+
+def test_search_returns_results(engine, fake_db):
     results = engine.search("algebra")
     assert len(results) == 1
     assert results[0].name == "Algorytmy i struktury danych"
 
 
-def test_search_uses_query_embedding_in_query(engine, monkeypatch):
-    fake_db = FakeDB()
-
-    @contextmanager
-    def fake_get_db(commit=False):
-        yield fake_db
-
-    monkeypatch.setattr(semantic_search, "get_db", fake_get_db)
+def test_search_uses_query_embedding_in_query(engine, fake_db):
     engine.search("algebra")
     statement, params = fake_db.statements[0]
     assert "course_data" in statement

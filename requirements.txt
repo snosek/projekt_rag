@@ -1,4 +1,1 @@
-psycopg2-binary
-sentence-transformers
-dotenv
-sqlalchemy
+-e ./src

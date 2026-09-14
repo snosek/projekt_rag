@@ -1,5 +1,8 @@
-psycopg2-binary
-sentence-transformers
-dotenv
-sqlalchemy
+streamlit
+pandas
+numpy>=1.21
 cohere
+python-dotenv
+sentence-transformers
+sqlalchemy
+psycopg2-binary

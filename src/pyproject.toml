@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag"
+version = "0.1.1"
+requires-python = ">=3.9"
+dependencies = [
+    "streamlit",
+    "pandas",
+    "numpy>=1.21",
+    "cohere",
+    "python-dotenv",
+    "sentence-transformers",
+    "sqlalchemy",
+    "psycopg2-binary",
+]
+
+[tool.setuptools.packages.find]
+include = ["rag*"]
