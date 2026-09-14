@@ -9,7 +9,7 @@ setup(
         'streamlit',
         'pandas',
         'numpy>=1.21',
-        'groq',
+        'cohere',
         'python-dotenv',
         'sentence-transformers',
         'sqlalchemy',

@@ -2,11 +2,11 @@ import streamlit as st
 from rag.semantic_search import SemanticSearchEngine
 from rag.chatbot import get_answer, create_prompt
 
-st.title("System RAG do programu studiów")
+st.title("Zapytaj o program studiów!")
 
 semantic_search_engine = SemanticSearchEngine()
 
-query = st.text_input("Podaj zapytanie")
+query = st.text_input("")
 
 if st.button("Pytaj") and query:
     with st.spinner("Pracuję..."):

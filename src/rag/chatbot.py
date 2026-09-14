@@ -1,11 +1,16 @@
 from os import getenv
 from dotenv import load_dotenv
-from groq import Groq
+import cohere
+import logging as log
 
+log.info("Loading .env...")
 load_dotenv()
 
-client = Groq(
-    api_key=getenv("GROQ_API_KEY")
+ENV_VAR_NAMES = ["POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB", "POSTGRES_PORT"]
+
+log.info(f'''.env loaded: {
+        [getenv(name) for name in ENV_VAR_NAMES]
+    }'''
 )
 
 def create_prompt(query, closest_courses):
@@ -36,14 +41,13 @@ def create_prompt(query, closest_courses):
     """
     return prompt
 
+co = cohere.ClientV2()
+
 def get_answer(prompt):
-    chat_completion = client.chat.completions.create(
+    response = co.chat(
         messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
+            {"role": "user", "content": prompt}
         ],
-        model="llama-3.3-70b-versatile",
+        model="command-a-plus-05-2026",
     )
-    return chat_completion.choices[0].message.content
+    return response.message.content[-1].text
